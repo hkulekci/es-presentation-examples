@@ -1,0 +1,80 @@
+### INDEX API
+PUT /users/staff/1
+{
+    "id": 2,
+    "name": "Haydar",
+    "viewCount": 1
+}
+
+### GET API
+GET /users/staff/1
+
+### DELETE API
+DELETE /users/staff/1
+
+
+### SCRIPTED UPDATE
+POST /users/staff/1/_update
+{
+    "script" : {
+        "inline": "ctx._source.viewCount += viewCount",
+        "params" : {
+            "viewCount" : 1
+        }
+    }
+}
+
+### PARTIAL UPDATE
+POST /users/staff/1/_update
+{
+    "doc" : {
+        "name" : "Mustafa"
+    }
+}
+
+### UPDATE BY QUERY (Version ^2.3)
+POST /users/staff/_update_by_query
+{
+    "script": {
+        "inline": "ctx._source.viewCount += 1"
+    },
+    "query": {
+        "term": {
+            "name": "mustafa"
+        }
+    }
+}
+
+### REINDEX API
+POST /_reindex
+{
+  "source": {
+    "index": "users"
+  },
+  "dest": {
+    "index": "users2016"
+  }
+}
+
+POST _reindex
+{
+  "source": {
+    "index": "users"
+  },
+  "dest": {
+    "index": "users2016"
+  },
+  "script": {
+    "inline": "ctx._source.count = ctx._source.remove(\"viewCount\")"
+  }
+}
+
+### TERM SEARCH
+GET /users/staff/_search
+{
+    "query": {
+        "term": {
+           "name": "mustafa"
+        }
+    }
+}

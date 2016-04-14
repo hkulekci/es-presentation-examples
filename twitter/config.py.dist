@@ -1,0 +1,9 @@
+access_token = ""
+access_token_secret = ""
+consumer_key = ""
+consumer_secret = ""
+
+
+es_configuration = [
+    {'host': '127.0.0.1', 'port': 9200},
+]

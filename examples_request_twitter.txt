@@ -1,0 +1,158 @@
+### MATCH_ALL QUERY
+GET twitter/tweet/_search
+{
+    "query": {"match_all": {}}
+}
+
+### TERM QUERY
+GET twitter/tweet/_search
+{
+    "query": {
+        "term": {
+           "user.id": 1451329962
+        }
+    }
+}
+
+### TERMS AGGREGATION
+GET twitter/tweet/_search
+{
+    "aggs": {
+        "topUsers": {
+            "terms": {
+                "field": "user.id"
+            },
+            "aggs": {
+                "username": {
+                    "terms": {
+                        "field": "user.name"
+                    }
+                }
+            }
+        }
+    },
+    "size": 0
+}
+
+### TERMS AGGREGATION WITH SCRIPT
+GET twitter/tweet/_search
+{
+    "aggs" : {
+        "topUsers" : {
+            "terms" : {
+                "script" : "doc['user.id'].value + '-' + doc['user.name'].value"
+            }
+        }
+    },
+    "size": 0
+}
+
+
+GET twitter/tweet/_search
+{
+    "filter": {
+        "exists": {
+           "field": "place"
+        }
+    },
+    "aggs": {
+        "country":{
+            "terms": {
+                "field":"place.country"
+            }
+        }
+    }
+}
+
+### DELETE INDEX
+DELETE twitter_with_mapping
+
+### CREATE INDEX
+POST twitter_with_mapping
+
+### CREATE MAPPING FOR TYPE
+POST twitter_with_mapping/tweet/_mapping
+{
+    "properties": {
+        "timestamp_ms": {
+            "type":"date"
+        },
+        "user": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "index":"not_analyzed"  
+                }
+            }
+        },
+        "place": {
+            "properties": {
+                "country": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        }
+    }
+}
+
+### GET TYPE MAPPING
+GET twitter_with_mapping/tweet/_mapping
+
+
+### REINDEX INDEX
+POST /_reindex
+{
+  "source": {
+    "index": "twitter"
+  },
+  "dest": {
+    "index": "twitter_with_mapping"
+  }
+}
+
+### HISTOGRAM AGGREGATION ON STRING FIELD
+GET twitter/tweet/_search
+{
+    "aggs" : {
+        "prices" : {
+            "histogram" : {
+                "field" : "timestamp_ms",
+                "interval" : 60000
+            }
+        }
+    },
+    "size": 0
+}
+
+### HISTOGRAM AGGREGATION ON DATE FIELD
+GET twitter_with_mapping/tweet/_search
+{
+    "aggs" : {
+        "prices" : {
+            "histogram" : {
+                "field" : "timestamp_ms",
+                "interval" : 60000
+            }
+        }
+    },
+    "size": 0
+}
+
+### AGGREGATION ON NOT ANALYZED STRING FIELD
+GET twitter_with_mapping/tweet/_search
+{
+    "filter": {
+        "exists": {
+           "field": "place"
+        }
+    },
+    "aggs": {
+        "country":{
+            "terms": {
+                "field":"place.country"
+            }
+        }
+    },
+    "size": 0
+}
