@@ -1,0 +1,14 @@
+{
+    "name": "hkulekci/es-presentation",
+    "description": "Elasticsearch Presentation Example with PHP",
+    "require": {
+        "fennb/phirehose": "^1.0",
+        "ruflin/elastica": "dev-master"
+    },
+    "authors": [
+        {
+            "name": "Haydar KULEKCI",
+            "email": "haydarkulekci@gmail.com"
+        }
+    ]
+}
