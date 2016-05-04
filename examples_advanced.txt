@@ -1,0 +1,442 @@
+## DELETING INDEX 
+
+DELETE twitter_for_search_with_mapping
+
+## CREATING INDEX
+
+POST twitter_for_search_with_mapping
+{
+    "settings": {
+        "index" : {
+            "number_of_shards" : 5
+        },
+        "analysis": {
+            "analyzer": {
+                "sortAnalyzer": {
+                  "tokenizer": "keyword",
+                  "filter": [
+                    "turkishSortFilter"
+                  ]
+                },
+                "keywordSearchAnalyzer": {
+                  "tokenizer": "standard",
+                  "filter": [
+                    "apostrophe",
+                    "turkishLowercaseFilter",
+                    "turkishStopwordsFilter",
+                    "asciiFilter"
+                  ]
+                },
+                "keywordSearchInputAnalyzer": {
+                  "tokenizer": "standard",
+                  "filter": [
+                    "turkishLowercaseFilter",
+                    "asciiFilter"
+                  ]
+                },
+                "autocompleteSearchInputAnalyzer": {
+                  "type": "custom",
+                  "tokenizer": "standard",
+                  "filter": [
+                    "apostrophe",
+                    "turkishLowercaseFilter",
+                    "asciiFilter"
+                  ]
+                },
+                "autocompleteSearchAnalyzer": {
+                  "type": "custom",
+                  "tokenizer": "standard",
+                  "filter": [
+                    "apostrophe",
+                    "turkishLowercaseFilter",
+                    "turkishStopwordsFilter",
+                    "asciiFilter",
+                    "autocompleteFilter",
+                    "unique"
+                  ]
+                }
+            },
+            "filter": {
+                "asciiFilter": {
+                  "type": "asciifolding",
+                  "preserve_original": true
+                },
+                "turkishStopwordsFilter": {
+                  "type": "stop",
+                  "stopwords": "_turkish_"
+                },
+                "turkishLowercaseFilter": {
+                  "type": "lowercase",
+                  "language": "turkish"
+                },
+                "autocompleteFilter": {
+                  "type": "edge_ngram",
+                  "min_gram": 2,
+                  "max_gram": 20
+                },
+                "turkishSortFilter": {
+                  "type": "icu_collation",
+                  "language": "tr"
+                }
+            }
+        }
+    }
+}
+
+
+## CREATING TYPE AND MAPPING
+
+POST twitter_for_search_with_mapping/tweet/_mapping
+{
+    "properties": {
+        "timestamp_ms": {
+            "type":"date"
+        },
+        "text": {
+            "type": "multi_field",
+            "fields": {
+                "original": {
+                  "type": "string",
+                  "index": "not_analyzed"
+                },
+                "standart": {
+                  "type": "string"
+                },
+                "keywordSearchField": {
+                  "type": "string",
+                  "index": "analyzed",
+                  "analyzer": "keywordSearchAnalyzer",
+                  "search_analyzer": "keywordSearchInputAnalyzer"
+                }
+            }
+        },
+        "user": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "index":"not_analyzed"  
+                }
+            }
+        },
+        "place": {
+            "properties": {
+                "country": {
+                    "type": "multi_field",
+                    "fields": {
+                        "original": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "autocompleteField": {
+                          "type": "string",
+                          "index": "analyzed",
+                          "analyzer": "autocompleteSearchAnalyzer",
+                          "search_analyzer": "autocompleteSearchInputAnalyzer"
+                        }
+                    }
+                }
+            }
+        },
+        "retweeted_status": {
+            "properties": {
+                "text": {
+                    "type": "string",
+                    "fields": {
+                        "original": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+POST /_reindex
+{
+  "source": {
+    "index": "twitter_for_search"
+  },
+  "dest": {
+    "index": "twitter_for_search_with_mapping"
+  }
+}
+
+## FETCHING MAPPING
+
+GET twitter_for_search_with_mapping/tweet/_mapping
+
+## MATCH QUERY STANDART TOKENIZER
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "match": {
+           "text.standart": "Onsuz"
+        }
+    }, 
+    "_source": ["text", "place.user.country"]
+}
+
+## MATCH QUERY KEYWORD SEARCH
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "match": {
+           "text.keywordSearchField": "Onsuz"
+        }
+    }, 
+    "_source": ["text", "place.user.country"]
+}
+
+## MATCH QUERY AUTOCOMPLETE
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "match": {
+           "place.country.autocompleteField": "Türk"
+        }
+    }, 
+    "_source": ["text", "place.country"]
+}
+
+## MATCH QUERY FUZZY
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "match": {
+            "text.keywordSearchField": {
+                "query": "onsz",
+                "fuzziness": 2   
+            }
+        }
+    }, 
+    "_source": ["text"]
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": { 
+        "fuzzy" : {
+            "text.keywordSearchField" : {
+                "value" : "olmuyor",
+                "fuzziness" : 3
+            }
+        }
+    },
+    "_source": ["text"]
+}
+
+## QUERY_STRING QUERY
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "query_string": {
+           "default_field": "text.keywordSearchField",
+           "query": "onsuz OR olmuyor"
+        }
+    },
+    "_source": ["text"]
+}
+
+## TERM QUERY 
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "term": {
+           "text.standart": "onsuz"
+        }
+    },
+    "_source": ["text"]
+}
+
+## TERMS QUERY
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "terms": {
+           "text.keywordSearchField": [
+               "onsuz",
+               "olmuyor"
+            ]
+        }
+    }, 
+    "_source": ["text"]
+}
+
+
+## BOOL QUERIES
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+               {
+                   "term": {
+                      "place.country.original": {
+                         "value": "Türkiye"
+                      }
+                   }
+               },
+               {
+                   "match": {
+                      "text.keywordSearchField": "Herkes"
+                   }
+               }
+            ]
+        }
+    }
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "bool": {
+            "must": [
+               {
+                   "term": {
+                      "place.country.original": {
+                         "value": "Türkiye"
+                      }
+                   }
+               }
+            ],
+            "must_not": [
+               {
+                   "match": {
+                      "text.keywordSearchField": "Herkes"
+                   }
+               }
+            ]
+        }
+    }
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "query": {
+        "bool": {
+            "must_not": [
+               {
+                   "term": {
+                      "retweeted": {
+                         "value": false
+                      }
+                   }
+               }
+            ]
+        }
+    }
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "filter": {
+        "bool": {
+            "must": [
+               {
+                   "exists": {
+                      "field": "retweeted_status.id"
+                   }
+               }
+            ]
+        }
+    }
+}
+
+
+
+## AGGREGATIONS
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "aggs": {
+        "countries": {
+            "terms": {
+                "field": "place.country.original",
+                "size": 100
+            }
+        }
+    }, 
+    "size": 0
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "aggs": {
+        "countries": {
+            "terms": {
+                "field": "place.country.autocompleteField",
+                "size": 100
+            }
+        }
+    }, 
+    "size": 0
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "aggs": {
+        "times": {
+            "histogram" : {
+                "field" : "timestamp_ms",
+                "interval" : 3600000
+            }
+        }
+    },
+    "size": 0
+}
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "aggs": {
+        "countries": {
+            "terms": {
+                "field": "place.country.original",
+                "size": 100
+            },
+            "aggs": {
+                "times": {
+                    "histogram" : {
+                        "field" : "timestamp_ms",
+                        "interval" : 3600000
+                    }
+                }
+            }
+        }
+    }, 
+    "size": 0
+}
+
+
+GET twitter_for_search_with_mapping/tweet/_search
+{
+    "filter": {
+        "exists": {
+          "field": "retweeted_status.id"
+        }
+    },
+    "aggs": {
+        "hashtags": {
+            "terms": {
+                "field": "retweeted_status.id"
+            },
+            "aggs": {
+                "text": {
+                    "terms": {
+                        "field": "retweeted_status.text.original"
+                    }
+                }
+            }
+        }
+    },
+    "size": 0
+}
