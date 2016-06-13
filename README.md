@@ -18,7 +18,12 @@ Right now, you can reach elasticsearch from your browser:
 
 [http://192.168.99.100:9200/](http://192.168.99.100:9200/)
 
-Your IP address may be different instead of `192.168.99.100`. 
+Your IP address may be different instead of `192.168.99.100`. You can use following command to see
+your docker machine IP address.
+
+```
+docker-machine inspect --format "{{.Driver.IPAddress}}"
+```
 
 ### External Tools
 
