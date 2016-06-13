@@ -31,8 +31,8 @@ You can use [Sense](https://chrome.google.com/webstore/detail/sense-beta/lhjgkml
 Chrome Browser plugin to execute your queries easily. This tool already will be able to be reachable in 
 your dashboard with 5.x version.
 
-Also, you can install elasticsearch head plugin. Use following commands to install head plugin to your 
-dockerized Elasticsearch service.
+Also, you can install elasticsearch [head plugin](https://mobz.github.io/elasticsearch-head/). Use 
+following commands to install head plugin to your dockerized Elasticsearch service.
 
 ```
 ➜  ~ docker ps
