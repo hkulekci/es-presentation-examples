@@ -18,3 +18,4 @@ pip-selfcheck.json
 
 # Project
 config.py
+data/*
