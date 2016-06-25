@@ -1,0 +1,30 @@
+
+POST graph_example/user
+{"id": 1, "username": "user1", "hobbies": ["listening", "programming", "cycling"]}
+
+POST graph_example/user
+{"id": 2, "username": "user2", "hobbies": ["programming", "cycling"]}
+
+POST graph_example/user
+{"id": 3, "username": "user3", "hobbies": ["painting", "cycling", "walking"]}
+
+POST graph_example/user
+{"id": 4, "username": "user4", "hobbies": ["listening", "programming", "boxing"]}
+
+POST graph_example/user
+{"id": 5, "username": "user5", "hobbies": ["listening", "programming", "running"]}
+
+POST graph_example/user
+{"id": 6, "username": "user6", "hobbies": ["listening", "boxing", "running"]}
+
+POST graph_example/user
+{"id": 7, "username": "user7", "hobbies": ["skiing", "programming", "cycling"]}
+
+POST graph_example/user
+{"id": 8, "username": "user8", "hobbies": ["listening", "painting", "cycling"]}
+
+POST graph_example/user
+{"id": 9, "username": "user9", "hobbies": ["listening", "programming", "cycling"]}
+
+POST graph_example/user
+{"id": 10, "username": "user10", "hobbies": ["walking", "skiing", "cycling"]}

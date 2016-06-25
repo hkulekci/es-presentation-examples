@@ -1,0 +1,127 @@
+### Index Silme
+DELETE checkins
+
+### Index Oluşturma
+POST checkins
+
+### Mapping Oluşturma
+POST checkins/checkin/_mapping
+{
+    "dynamic": false,
+    "properties": {
+        "date": {
+            "type": "date",
+            "format": "dateOptionalTime"
+        },
+        "VenueCategoryName": {
+            "type": "string",
+            "fields": {
+                "raw": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                }
+            }
+        },
+        "venueCategoryId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "venueId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "userId": {
+            "type": "string",
+            "index": "not_analyzed"
+        },
+        "location": {
+            "type": "geo_point"
+        }
+    }
+}
+
+### Mapping Görüntüleme
+GET checkins/checkin/_mapping
+
+### Tüm Veriyi Arama
+GET checkins/checkin/_search
+{
+    "query": {"match_all": {}}
+}
+
+### Aggregate Filtered Data With Terms Aggregation
+GET checkins/checkin/_search
+{
+    "filter": {
+        "term": {
+           "VenueCategoryName": "cafe"
+        }
+    },
+    "aggs": {
+        "vategoryNames": {
+            "terms": {
+                "field": "VenueCategoryName.raw"
+            }
+        }
+    }
+}
+
+### Aggregate Filtered Data With Terms & Filter Aggregation
+GET checkins/checkin/_search
+{
+    "filter": {
+        "term": {
+           "VenueCategoryName": "cafe"
+        }
+    },
+    "aggs": {
+        "vategoryNames": {
+            "filter": {
+                "term": {
+                   "VenueCategoryName": "cafe"
+                }
+            },
+            "aggs": {
+                "vategoryNames": {
+                    "terms": {
+                        "field": "VenueCategoryName.raw"
+                    }
+                }
+            }
+        }
+    }
+}
+
+### GeoDistance Filter
+GET checkins/checkin/_search
+{
+    "filter": {
+        "geo_distance": {
+           "distance": "10km",
+           "location": "40.712784, -74.005941"
+        }
+    },
+    "size": 0
+}
+
+### GeoDistance Aggregation
+GET checkins/checkin/_search
+{
+    "size": 0, 
+    "aggs" : {
+        "rings_around_newyork" : {
+            "geo_distance" : {
+                "field" : "location",
+                "origin" : "40.712784, -74.005941",
+                "unit" : "km",
+                "ranges" : [
+                    { "to" : 5 },
+                    { "from" : 5, "to" : 10 },
+                    { "from" : 10, "to" : 15 },
+                    { "from" : 15, "to" : 30 },
+                    { "from" : 30 }
+                ]
+            }
+        }
+    }
+}

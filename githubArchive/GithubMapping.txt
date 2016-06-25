@@ -1,0 +1,206 @@
+### Index Silme Örneği
+DELETE github_with_mapping
+
+### Index Oluşturma Örneği
+POST github_with_mapping
+{
+   "settings": {
+      "analysis": {
+         "analyzer": {
+            "autocompleteAnalyzer": {
+               "type": "custom",
+               "tokenizer": "standard",
+               "filter": [
+                  "lowercase",
+                  "english_stop",
+                  "asciifolding",
+                  "autocomplete_filter"
+               ]
+            },
+            "autocompleteSearchAnalyzer": {
+               "type": "custom",
+               "tokenizer": "standard",
+               "filter": [
+                  "lowercase",
+                  "asciifolding"
+               ]
+            },
+            "keywordSearch": {
+               "type": "custom",
+               "tokenizer": "standard",
+               "filter": [
+                  "lowercase",
+                  "asciifolding",
+                  "english_stop"
+               ]
+            }
+         },
+         "filter": {
+            "english_stop": {
+               "type": "stop",
+               "stopwords": "_english_"
+            },
+            "autocomplete_filter": {
+                "type":     "edge_ngram",
+                "min_gram": 1,
+                "max_gram": 20
+            }
+         }
+      }
+   }
+}
+
+### Mapping Oluşturma Örneği
+POST github_with_mapping/action/_mapping
+{
+    "properties": {
+        "created_at": {
+            "type": "date"
+        },
+        "payload": {
+            "dynamic": false,
+            "properties": {
+                "action": {
+                    "type": "string",
+                    "index": "not_analyzed"
+                },
+                "commits": {
+                    "properties": {
+                        "message": {
+                            "type": "string",
+                            "fields": {
+                                "keywordSearch": {
+                                    "type": "string",
+                                    "analyzer": "keywordSearch",
+                                    "search_analyzer": "keywordSearch"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "repo": {
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "autocomplete": {
+                            "type": "string",
+                            "analyzer": "autocompleteAnalyzer",
+                            "search_analyzer": "autocompleteSearchAnalyzer"
+                        }
+                    }
+                }
+            }
+        },
+        "actor": {
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "fields": {
+                        "raw": {
+                            "type": "string",
+                            "index": "not_analyzed"
+                        },
+                        "autocomplete": {
+                            "type": "string",
+                            "analyzer": "autocompleteAnalyzer",
+                            "search_analyzer": "autocompleteSearchAnalyzer"
+                        }
+                    }
+                }
+            }
+        },
+        "type": {
+            "type": "string",
+            "index": "not_analyzed"
+        }
+    }
+}
+
+### Mapping Bilgilerini Çekme Örneği
+GET github_with_mapping/action/_mapping
+
+### Mapping Güncelleme Örneği
+PUT github_with_mapping/action/_mapping
+{
+  "_source": {
+    "enabled": false
+  }
+}
+
+### Reindex Örneği
+POST /_reindex
+{
+   "source": {
+      "index": "github"
+   },
+   "dest": {
+      "index": "github_with_mapping"
+   }
+}
+
+
+GET github_with_mapping/action/_search
+{
+    "query": {"match_all": {}}
+}
+
+### Autocomplete Arama Örneği
+GET github_with_mapping/action/_search
+{
+    "query": {
+        "match": {
+           "actor.login.autocomplete": "lom bot"
+        }
+    },
+    "_source": ["actor.login"]
+}
+
+### Autocomplete Arama Örneği
+GET github_with_mapping/action/_search
+{
+    "query": {
+        "query_string": {
+           "default_field": "actor.login.autocomplete",
+           "query": "flip tri",
+           "default_operator": "AND"
+        }
+    },
+    "_source": ["actor.login"]
+}
+
+### Ençok Etkileşimi olan kişi
+GET github_with_mapping/action/_search
+{
+    "aggs": {
+        "login": {
+            "terms": {
+                "field": "actor.login.raw"
+            }
+        }
+    },
+    "size": 0
+}
+
+### Commit Mesajlarında Ençok Kullanılan Kelimeler
+GET github_with_mapping/action/_search
+{
+    "filter": {
+        "term": {
+            "type": "PushEvent"
+        }
+    },
+    "aggs": {
+        "messageTokens": {
+            "terms": {
+                "field": "payload.commits.message.keywordSearch"
+            }
+        }
+    }
+}

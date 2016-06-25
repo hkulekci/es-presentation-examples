@@ -1,0 +1,6 @@
+conf = [
+    {
+        'clientId': '',
+        'clientSecret': ''
+    },
+]
