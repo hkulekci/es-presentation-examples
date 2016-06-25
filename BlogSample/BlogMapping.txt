@@ -1,0 +1,110 @@
+POST blogs
+
+POST blogs/blog/mapping
+{
+    "properties": {
+        "id": {
+            "type": "integer"
+        },
+        "title": {
+            "type": "string"
+        },
+        "content": {
+            "type": "string"
+        },
+        "keywords": {
+            "type": "string"
+        }
+    }
+}
+
+POST /blogs/blog/1
+{
+    "id": "1",
+    "title": "Takma isim (Alias) kullanarak verileri filtrelemek",
+    "content": "Bir önceki yazımda `index` için takma isim oluşturmayı ve bu takma ismi kullanmayı görmüştük. Elasticsearch'ün yeni sürümü (2.x) ile birlikte takma isimler ile birlikte  index üzerinde filtreleme de yapabiliyorsunuz. Bir örnek ile açıklamaya çalışalım. `id`, `type`, `keywords` alanlarından oluşan bir index ve tipimiz var. Aşağıdakine benzer verilerin olduğunu düşünün.",
+    "keywords": ["alias", "takma isim", "index", "filter", "filtering"]
+}
+
+POST /blogs/blog/2
+{
+    "id": "2",
+    "title": "Index adı olarak `Alias` Kullanmak ve Reindex API",
+    "content": "Elasticsearch API arayüzü `index` isimleri üzerinden çalışmaktadır ve bir cluster içerisinde <br />çoğu zaman bir çok `index`iniz bulunmaktadır. Index Alias API arayüzü ile `index` isimlerinize<br />takma isimler verebilirsiniz. Bunun önemini bir örnek üzerinden açıklamaya çalışayım. <br /> <br /> Bir kullanıcıların verilerini tuttuğunuz `index`iniz var ve yapısı aşağıdaki gibi:<br /> <br /> ```json<br /> GET users/user/_mapping<br /> {<br />    \"users\": {<br />       \"mappings\": {<br />          \"user\": {<br />             \"properties\": {<br />                \"id\": {<br />                   \"type\": \"string\"<br />                },<br />                \"name\": {<br />                   \"type\": \"string\"<br />                },<br />                \"tags\": {<br />                   \"type\": \"string\",<br />                   \"index\": \"not_analyzed\"<br />                }<br />             }<br />          }<br />       }<br />    }<br /> }<br /> ```<br /> <br /> Bir takım verileriniz birikti ve sonradan farkettiniz ki `id` alanını integer yerine string olarak<br /> kaydetmişsiniz. Hemen değiştirmek için bir mapping update sorgusu hazırladınız:",
+    "keywords": ["alias", "takma isim", "index"]
+}
+
+POST /blogs/blog/3
+{
+    "id": "3",
+    "title": "Nginx ile Elasticsearch için Koruma Oluşturun",
+    "content": "Elasticsearch HTTP API arayüzü üzerinden çalıştığı için bir sunucu üzerinde çalıştırdığınızda <br /> dış dünya tarafından ulaşılabilir halde çalışıyor olacaktır. Burada Elasticsearch erişimini dış<br /> dünyaya yani sizin uygulamanız dışındaki kişilere erişimini kapatmak için bir kaç yol <br /> bulunmakta. Bunlardan birisi de \"Basic Authentication\". Yani bir kullanıcı adı şifre ile <br /> koruma yöntemi. Bu yöntem sizin sunucularınızı tabiki tamamen koruyamayabilir. Önerim <br /> firewall seviyesinde ya da network seviyesinde erişimin kısıtlanmasıdır. Ancak bu kısıtlama <br /> iç ağdan birilerinin de elasticsearch içerisinde rahatça işlem yapmalarını engelleyemez. <br /> Bunun için kullanıcı adı ve  şifre ile koruyarak buradaki erişimi iç ağ üzerinde de kısıtlamaya <br /> çalışacağız.<br /> <br /> Bunu nasıl yapacağız şimdi kısaca buna değinelim. Gerekli araç ve gereçler : <br /> <br />  - Nginx <br />  - Elasticsearch<br />  <br /> Hepsi bu kadar. Ben şimdilik Elasticsearch'ün varsayılan port'u üzerinden örnekleyeceğim. <br /> İlk olarak bir Elasticsearch makinesini çalıştırıyoruz ve [http://127.0.0.1:9200/](http://127.0.0.1:9200/) <br /> adresinden çalıştığını görüyoruz. <br /> <br /> Daha sonra Nginx üzerinden aşağıdaki gibi bir server oluşturuyoruz.",
+    "keywords": ["nginx", "serve", "HTTP API", "API", "Authentication"]
+}
+
+POST /blogs/blog/4
+{
+    "id": "4",
+    "title": "Inverted Index Nedir?",
+    "content": "Text tabanlı bir döküman kümeniz olduğunu düşünün. Bu dökümanlar içerisindeki terimlerinizi<br /> bu terimlerin hangi dökümanlar ile ilişkili olduğunu dökümanın bilgisini bir yerde <br /> tuttuğunuzu düşünün. Bu terimler içerisinde bir arama yaptığınızda terimlere karşılık <br /> gelen dökümanları hızlıca bulabileceksiniz. Yani siz dökümanlarınıza terimler üzerinden<br /> ulaşıyor olacaksınız. İşte buna inverted(ters) index denir. <br /> <br /> Aşağıdaki örnekte inverted index kavramını görsel olarak daha iyi anlayabilirsiniz. <br /> Burada dikkat edilmesi gereken bir diğer önemli kısımda `analyzers` kısmıdır. Burada<br /> bizim metnimizi bir takım `tokenizer` ve `filter`lardan geçirerek inverted index olarak<br /> kaydediyoruz. Aşağıdaki örnekte veriler sırasıyla `Standart Tokenizer`, `Lowercase Filter` <br /> ve `Stopwords Filter`'dan geçirilmektedir. Daha sonrada inverted index olarak <br /> kaydedilmektedir.<br /> <br /> ![http://elasticsearch.kulekci.net/assets/img/inverted-index.png](http://elasticsearch.kulekci.net/assets/img/inverted-index.png)<br /> <br /> Burada ekstra olarak bir terimin döküman içerisindeki pozisyonunu da kaydettiğinizi <br /> düşünürsek kolayca terim için her döküman karşılık bir puan da çıkarabilirsiniz ve <br /> aramalarda bunu sonuçları sıralamak için kullanabilirsiniz. ",
+    "keywords": ["index", "inverted", "nedir", "döküman", "arama", "search"]
+}
+
+
+### An analyzer of type standard is built using the Standard Tokenizer with the Standard Token Filter, Lower Case Token Filter, and Stop Token Filter (Defaults to the english stop words).
+GET blogs/blog/_search
+{
+    "query": {
+        "match": {
+           "title": "Oluşturun"
+        }
+    }
+}
+
+GET blogs/blog/_search
+{
+    "filter": {
+        "term": {
+           "content": "elasticsearch"
+        }
+    }
+}
+
+GET blogs/blog/_search
+{
+    "query": {
+        "term": {
+           "content": "bir"
+        }
+    }
+}
+
+GET blogs/blog/_search
+{
+    "query": { 
+        "fuzzy" : {
+            "title" : {
+                "value" :         "filtrelemekee",
+                "boost" :         1.0,
+                "fuzziness" :     3,
+                "prefix_length" : 0,
+                "max_expansions": 100
+            }
+        }
+    }
+}
+
+GET blogs/blog/_search
+{
+    "filter": { 
+        "fuzzy" : {
+            "content" : {
+                "value" :         "oluşmak",
+                "boost" :         1.0,
+                "fuzziness" :     3,
+                "prefix_length" : 0,
+                "max_expansions": 100
+            }
+        }
+    }
+}
