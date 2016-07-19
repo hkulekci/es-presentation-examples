@@ -2,28 +2,23 @@
 
 To install your environment on [docker](https://www.docker.com/), follow the below steps. 
 
-Firstly, build your image:
+Firstly, build your images for elasticsearch, kibana and their plugins (graph, sense, head, ...):
 
 ```
-docker build -t my_elasticsearch .
+docker-compose build
 ```
 
-After that, run your image:
+After that, run your images:
 
 ```
-docker run -t -p 9200:9200 -p 9300:9300 --rm my_elasticsearch
+docker-compose up
 ```
 
 Right now, you can reach elasticsearch from your browser:
 
-[http://192.168.99.100:9200/](http://192.168.99.100:9200/)
+[http://localhost:9200/](http://localhost:9200/)
 
-Your IP address may be different instead of `192.168.99.100`. You can use following command to see
-your docker machine IP address.
-
-```
-docker-machine inspect --format "{{.Driver.IPAddress}}"
-```
+In this container, there is head plugin for elasticsearch and graph plugin for 
 
 ### External Tools
 
@@ -33,7 +28,7 @@ You can use [Sense](https://chrome.google.com/webstore/detail/sense-beta/lhjgkml
 Chrome Browser plugin to execute your queries easily. This tool already will be able to be reachable in 
 your dashboard with 5.x version.
 
-#### Head ES Plugin
+#### Head ES Plugin (Manually Install)
 
 Also, you can install elasticsearch [head plugin](https://mobz.github.io/elasticsearch-head/). Use 
 following commands to install head plugin to your dockerized Elasticsearch service.
@@ -52,7 +47,7 @@ NOTE: Unable to verify checksum for downloaded plugin (unable to find .sha1 or .
 Installed head into /usr/share/elasticsearch/plugins/head
 ```
 
-#### Graph Plugin
+#### Graph Plugin (Manually Install)
 
 ```
 ➜  ~ docker ps
